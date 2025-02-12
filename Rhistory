@@ -1,0 +1,512 @@
+library(shiny)
+library(shinydashboard)
+library(plotly)
+library(DT)
+library(highcharter)
+library(leaflet)
+# Your data
+crop_diseases_updated <- data.frame(
+Disease = c("Powdery Mildew", "Corn Smut", "Cotton Root Rot", "Potato Virus Y", "Wheat Stripe Rust", "Rice Blast", "Apple Scab", "Brown Rot", "Soybean Rust", "Tomato Yellow Leaf Curl Virus"),
+Affected_Crops = c("Grapes, Wheat, Roses", "Corn", "Cotton", "Potatoes", "Wheat", "Rice", "Apples", "Stone Fruits (Peaches, Plums)", "Soybeans", "Tomatoes"),
+Causative_Agent = c("Fungi (Various species)", "Fungus (Ustilago maydis)", "Fungus (Phymatotrichopsis omnivora)", "Virus (Potato virus Y)", "Fungus (Puccinia striiformis)", "Fungus (Magnaporthe oryzae)", "Fungus (Venturia inaequalis)", "Fungus (Monilinia fructicola)", "Fungus (Phakopsora pachyrhizi)", "Virus (Begomovirus)"),
+Places_Grown = c("Nashik, Ludhiana, Bangalore", "Punjab, Haryana, Maharashtra", "Gujarat, Maharashtra", "Uttar Pradesh, Punjab", "Punjab, Haryana, Uttar Pradesh", "Punjab, Haryana, West Bengal", "Jammu and Kashmir, Himachal Pradesh", "Himachal Pradesh, Jammu and Kashmir", "Madhya Pradesh, Maharashtra", "Maharashtra, Karnataka"),
+Latitude = c(20.0059, 30.9000, 22.2587, 26.8467, 31.9686, 32.7266, 32.7266, 32.0842, 22.9734, 15.3173),
+Longitude = c(73.7554, 75.8573, 71.1924, 80.9462, 74.8700, 74.8700, 74.8700, 74.8700, 78.6569, 75.7139),
+Percentage_of_Destruction = c(5, 20, 10, 10, 30, 10, 30, 20, 10, 20)
+)
+# Define UI for application
+ui <- dashboardPage(
+dashboardHeader(title = "Crop Diseases Dashboard"),
+dashboardSidebar(
+sidebarMenu(
+menuItem("Bar Chart", tabName = "bar_chart", icon = icon("bar-chart")),
+menuItem("Pie Chart", tabName = "pie_chart", icon = icon("pie-chart")),
+menuItem("Scatter Plot", tabName = "scatter_plot", icon = icon("dot-circle-o")),
+menuItem("Histogram", tabName = "histogram", icon = icon("bar-chart")),
+menuItem("Line Chart", tabName = "line_chart", icon = icon("line-chart")),
+menuItem("Trend Chart", tabName = "trend_chart", icon = icon("line-chart")),
+menuItem("Area Charts", tabName = "area_charts", icon = icon("area-chart")),
+menuItem("Bubble Plot", tabName = "bubble_plot", icon = icon("circle")),
+menuItem("Data Table", tabName = "data_table", icon = icon("table")),
+menuItem("Map", tabName = "map", icon = icon("map"))
+)
+),
+dashboardBody(
+tabItems(
+# Bar Chart
+tabItem(tabName = "bar_chart",
+fluidRow(
+box(width = 12, plotlyOutput("bar_chart"))
+)
+),
+# Pie Chart
+tabItem(tabName = "pie_chart",
+fluidRow(
+box(width = 12, plotlyOutput("pie_chart"))
+)
+),
+# Scatter Plot
+tabItem(tabName = "scatter_plot",
+fluidRow(
+box(width = 12, plotlyOutput("scatter_plot"))
+)
+),
+# Histogram
+tabItem(tabName = "histogram",
+fluidRow(
+box(width = 12, plotlyOutput("histogram"))
+)
+),
+# Line Chart
+tabItem(tabName = "line_chart",
+fluidRow(
+box(width = 12, plotlyOutput("line_chart"))
+)
+),
+# Trend Chart
+tabItem(tabName = "trend_chart",
+fluidRow(
+box(width = 12, highchartOutput("trend_chart"))
+)
+),
+# Area Charts
+tabItem(tabName = "area_charts",
+fluidRow(
+box(width = 12, plotlyOutput("area_charts"))
+)
+),
+# Bubble Plot
+tabItem(tabName = "bubble_plot",
+fluidRow(
+box(width = 12, plotlyOutput("bubble_plot"))
+)
+),
+# Data Table
+tabItem(tabName = "data_table",
+fluidRow(
+box(width = 12, DTOutput("data_table"))
+)
+),
+# Map
+tabItem(tabName = "map",
+fluidRow(
+box(width = 12, leafletOutput("map"))
+)
+)
+)
+)
+)
+# Define server logic
+server <- function(input, output) {
+# Render Bar Chart
+output$bar_chart <- renderPlotly({
+plot_ly(
+data = crop_diseases_updated,
+x = ~Disease,
+y = ~Percentage_of_Destruction,
+type = "bar",
+name = "Percentage of Destruction",
+hoverinfo = "text",
+text = ~paste("Disease: ", Disease, "<br>Percentage: ", Percentage_of_Destruction, "%"),
+marker = list(color = "yellow")
+) %>%
+layout(title = "Crop Disease Impact",
+xaxis = list(title = "Disease"),
+yaxis = list(title = "Percentage of Destruction"),
+showlegend = TRUE)
+})
+# Render Pie Chart
+output$pie_chart <- renderPlotly({
+plot_ly(
+data = crop_diseases_updated,
+labels = ~Disease,
+values = ~Percentage_of_Destruction,
+type = "pie",
+textinfo = "label+percent",
+textposition = "inside",
+marker = list(colors = rainbow(length(crop_diseases_updated$Disease)))
+) %>%
+layout(title = "Distribution of Crop Diseases")
+})
+# Render Scatter Plot
+output$scatter_plot <- renderPlotly({
+plot_ly(
+data = crop_diseases_updated,
+x = ~Disease,
+y = ~Percentage_of_Destruction,
+mode = "markers",
+type = "scatter",
+marker = list(size = 10, color = "red"),
+text = ~paste("Disease: ", Disease, "<br>Percentage: ", Percentage_of_Destruction, "%")
+) %>%
+layout(title = "Scatter Plot of Crop Diseases",
+xaxis = list(title = "Disease"),
+yaxis = list(title = "Percentage of Destruction"))
+})
+# Render Histogram
+output$histogram <- renderPlotly({
+plot_ly(
+data =crop_diseases_updated,
+x = ~Percentage_of_Destruction,
+type = "histogram",
+marker = list(color = "orange"),
+text = ~paste("Disease: ", Disease, "<br>Percentage: ", Percentage_of_Destruction, "%")
+) %>%
+layout(title = "Histogram of Crop Disease Impact",
+xaxis = list(title = "Percentage of Destruction"),
+yaxis = list(title = "Frequency"))
+})
+# Render Line Chart
+output$line_chart <- renderPlotly({
+plot_ly(
+data = crop_diseases_updated,
+x = ~Disease,
+y = ~Percentage_of_Destruction,
+type = "scatter",
+mode = "lines+markers",
+line = list(color = "yellow"),
+marker = list(size = 8),
+text = ~paste("Disease: ", Disease, "<br>Percentage: ", Percentage_of_Destruction, "%")
+) %>%
+layout(title = "Line Chart of Crop Disease Impact",
+xaxis = list(title = "Disease"),
+yaxis = list(title = "Percentage of Destruction"))
+})
+# Render Trend Chart
+output$trend_chart <- renderHighchart({
+hc <- highchart() %>%
+hc_chart(type = "line") %>%
+hc_xAxis(categories = crop_diseases_updated$Disease) %>%
+hc_yAxis(title = list(text = "Percentage of Destruction")) %>%
+hc_add_series(crop_diseases_updated$Percentage_of_Destruction, name = "Percentage of Destruction") %>%
+hc_title(text = "Trend Chart of Crop Disease Impact") %>%
+hc_legend(enabled = TRUE)
+hc
+})
+# Render Spider Chart
+output$spider_chart <- renderPlotly({
+plot_ly(
+data =crop_diseases_updated,
+type = "scatterpolar",
+mode = "lines+markers",
+categories = ~Disease,
+r = ~Percentage_of_Destruction,
+theta = ~Disease,
+fill = "toself",
+line = list(color = "grey")
+) %>%
+layout(title = "Spider Chart of Crop Disease Impact",
+polar = list(radialaxis = list(visible = TRUE, title = "Percentage of Destruction")))
+})
+# Render Area Charts
+output$area_charts <- renderPlotly({
+plot_ly(
+data = crop_diseases_updated,
+x = ~Disease,
+y = ~Percentage_of_Destruction,
+type = "scatter",
+mode = "lines",
+fill = "tozeroy",
+line = list(color = "red")
+) %>%
+layout(title = "Area Chart of Crop Disease Impact",
+xaxis = list(title = "Disease"),
+yaxis = list(title = "Percentage of Destruction"))
+})
+# Render Bubble Plot
+output$bubble_plot <- renderPlotly({
+plot_ly(
+data = crop_diseases_updated,
+x = ~Disease,
+y = ~Percentage_of_Destruction,
+type = "scatter",
+mode = "markers",
+marker = list(size = ~Percentage_of_Destruction, color = "yellow"),
+text = ~paste("Disease: ", Disease, "<br>Percentage: ", Percentage_of_Destruction, "%")
+) %>%
+layout(title = "Bubble Plot of Crop Disease Impact",
+xaxis = list(title = "Disease"),
+yaxis = list(title = "Percentage of Destruction"))
+})
+# Data Table
+output$data_table <- renderDT({
+datatable(crop_diseases_updated, escape = FALSE, options = list(pageLength = 5))
+})
+# Map
+output$map <- renderLeaflet({
+leaflet(data = crop_diseases_updated) %>%
+addTiles() %>%
+addMarkers(lng = ~Longitude, lat = ~Latitude, popup = ~paste( Affected_Crops, " - ", Places_Grown))
+})
+}
+# Run the application
+shinyApp(ui, server)
+#adding more graphs trail 5
+# checking map
+library(shiny)
+library(shinydashboard)
+library(plotly)
+library(DT)
+library(highcharter)
+library(leaflet)
+# Your data
+crop_diseases_updated <- data.frame(
+Disease = c("Powdery Mildew", "Corn Smut", "Cotton Root Rot", "Potato Virus Y", "Wheat Stripe Rust", "Rice Blast", "Apple Scab", "Brown Rot", "Soybean Rust", "Tomato Yellow Leaf Curl Virus"),
+Affected_Crops = c("Grapes, Wheat, Roses", "Corn", "Cotton", "Potatoes", "Wheat", "Rice", "Apples", "Stone Fruits (Peaches, Plums)", "Soybeans", "Tomatoes"),
+Causative_Agent = c("Fungi (Various species)", "Fungus (Ustilago maydis)", "Fungus (Phymatotrichopsis omnivora)", "Virus (Potato virus Y)", "Fungus (Puccinia striiformis)", "Fungus (Magnaporthe oryzae)", "Fungus (Venturia inaequalis)", "Fungus (Monilinia fructicola)", "Fungus (Phakopsora pachyrhizi)", "Virus (Begomovirus)"),
+Places_Grown = c("Nashik, Ludhiana, Bangalore", "Punjab, Haryana, Maharashtra", "Gujarat, Maharashtra", "Uttar Pradesh, Punjab", "Punjab, Haryana, Uttar Pradesh", "Punjab, Haryana, West Bengal", "Jammu and Kashmir, Himachal Pradesh", "Himachal Pradesh, Jammu and Kashmir", "Madhya Pradesh, Maharashtra", "Maharashtra, Karnataka"),
+Latitude = c(20.0059, 30.9000, 22.2587, 26.8467, 31.9686, 32.7266, 32.7266, 32.0842, 22.9734, 15.3173),
+Longitude = c(73.7554, 75.8573, 71.1924, 80.9462, 74.8700, 74.8700, 74.8700, 74.8700, 78.6569, 75.7139),
+Percentage_of_Destruction = c(5, 20, 10, 10, 30, 10, 30, 20, 10, 20)
+)
+# Define UI for application
+ui <- dashboardPage(
+dashboardHeader(title = "Crop Diseases Dashboard"),
+dashboardSidebar(
+sidebarMenu(
+menuItem("Bar Chart", tabName = "bar_chart", icon = icon("bar-chart")),
+menuItem("Pie Chart", tabName = "pie_chart", icon = icon("pie-chart")),
+menuItem("Scatter Plot", tabName = "scatter_plot", icon = icon("dot-circle-o")),
+menuItem("Histogram", tabName = "histogram", icon = icon("bar-chart")),
+menuItem("Line Chart", tabName = "line_chart", icon = icon("line-chart")),
+menuItem("Trend Chart", tabName = "trend_chart", icon = icon("line-chart")),
+menuItem("Area Charts", tabName = "area_charts", icon = icon("area-chart")),
+menuItem("Bubble Plot", tabName = "bubble_plot", icon = icon("circle")),
+menuItem("Data Table", tabName = "data_table", icon = icon("table")),
+menuItem("Map", tabName = "map", icon = icon("map"))
+)
+),
+dashboardBody(
+tabItems(
+# Bar Chart
+tabItem(tabName = "bar_chart",
+fluidRow(
+box(width = 12, plotlyOutput("bar_chart"))
+)
+),
+# Pie Chart
+tabItem(tabName = "pie_chart",
+fluidRow(
+box(width = 12, plotlyOutput("pie_chart"))
+)
+),
+# Scatter Plot
+tabItem(tabName = "scatter_plot",
+fluidRow(
+box(width = 12, plotlyOutput("scatter_plot"))
+)
+),
+# Histogram
+tabItem(tabName = "histogram",
+fluidRow(
+box(width = 12, plotlyOutput("histogram"))
+)
+),
+# Line Chart
+tabItem(tabName = "line_chart",
+fluidRow(
+box(width = 12, plotlyOutput("line_chart"))
+)
+),
+# Trend Chart
+tabItem(tabName = "trend_chart",
+fluidRow(
+box(width = 12, highchartOutput("trend_chart"))
+)
+),
+# Area Charts
+tabItem(tabName = "area_charts",
+fluidRow(
+box(width = 12, plotlyOutput("area_charts"))
+)
+),
+# Bubble Plot
+tabItem(tabName = "bubble_plot",
+fluidRow(
+box(width = 12, plotlyOutput("bubble_plot"))
+)
+),
+# Data Table
+tabItem(tabName = "data_table",
+fluidRow(
+box(width = 12, DTOutput("data_table"))
+)
+),
+# Map
+tabItem(tabName = "map",
+fluidRow(
+box(width = 12, leafletOutput("map"))
+)
+)
+)
+)
+)
+# Define server logic
+server <- function(input, output) {
+# Render Bar Chart
+output$bar_chart <- renderPlotly({
+plot_ly(
+data = crop_diseases_updated,
+x = ~Disease,
+y = ~Percentage_of_Destruction,
+type = "bar",
+name = "Percentage of Destruction",
+hoverinfo = "text",
+text = ~paste("Disease: ", Disease, "<br>Percentage: ", Percentage_of_Destruction, "%"),
+marker = list(color = "yellow")
+) %>%
+layout(title = "Crop Disease Impact",
+xaxis = list(title = "Disease"),
+yaxis = list(title = "Percentage of Destruction"),
+showlegend = TRUE)
+})
+# Render Pie Chart
+output$pie_chart <- renderPlotly({
+plot_ly(
+data = crop_diseases_updated,
+labels = ~Disease,
+values = ~Percentage_of_Destruction,
+type = "pie",
+textinfo = "label+percent",
+textposition = "inside",
+marker = list(colors = rainbow(length(crop_diseases_updated$Disease)))
+) %>%
+layout(title = "Distribution of Crop Diseases")
+})
+# Render Scatter Plot
+output$scatter_plot <- renderPlotly({
+plot_ly(
+data = crop_diseases_updated,
+x = ~Disease,
+y = ~Percentage_of_Destruction,
+mode = "markers",
+type = "scatter",
+marker = list(size = 10, color = "red"),
+text = ~paste("Disease: ", Disease, "<br>Percentage: ", Percentage_of_Destruction, "%")
+) %>%
+layout(title = "Scatter Plot of Crop Diseases",
+xaxis = list(title = "Disease"),
+yaxis = list(title = "Percentage of Destruction"))
+})
+# Render Histogram
+output$histogram <- renderPlotly({
+plot_ly(
+data =crop_diseases_updated,
+x = ~Percentage_of_Destruction,
+type = "histogram",
+marker = list(color = "orange"),
+text = ~paste("Disease: ", Disease, "<br>Percentage: ", Percentage_of_Destruction, "%")
+) %>%
+layout(title = "Histogram of Crop Disease Impact",
+xaxis = list(title = "Percentage of Destruction"),
+yaxis = list(title = "Frequency"))
+})
+# Render Line Chart
+output$line_chart <- renderPlotly({
+plot_ly(
+data = crop_diseases_updated,
+x = ~Disease,
+y = ~Percentage_of_Destruction,
+type = "scatter",
+mode = "lines+markers",
+line = list(color = "yellow"),
+marker = list(size = 8),
+text = ~paste("Disease: ", Disease, "<br>Percentage: ", Percentage_of_Destruction, "%")
+) %>%
+layout(title = "Line Chart of Crop Disease Impact",
+xaxis = list(title = "Disease"),
+yaxis = list(title = "Percentage of Destruction"))
+})
+# Render Trend Chart
+output$trend_chart <- renderHighchart({
+hc <- highchart() %>%
+hc_chart(type = "line") %>%
+hc_xAxis(categories = crop_diseases_updated$Disease) %>%
+hc_yAxis(title = list(text = "Percentage of Destruction")) %>%
+hc_add_series(crop_diseases_updated$Percentage_of_Destruction, name = "Percentage of Destruction") %>%
+hc_title(text = "Trend Chart of Crop Disease Impact") %>%
+hc_legend(enabled = TRUE)
+hc
+})
+# Render Spider Chart
+output$spider_chart <- renderPlotly({
+plot_ly(
+data =crop_diseases_updated,
+type = "scatterpolar",
+mode = "lines+markers",
+categories = ~Disease,
+r = ~Percentage_of_Destruction,
+theta = ~Disease,
+fill = "toself",
+line = list(color = "grey")
+) %>%
+layout(title = "Spider Chart of Crop Disease Impact",
+polar = list(radialaxis = list(visible = TRUE, title = "Percentage of Destruction")))
+})
+# Render Area Charts
+output$area_charts <- renderPlotly({
+plot_ly(
+data = crop_diseases_updated,
+x = ~Disease,
+y = ~Percentage_of_Destruction,
+type = "scatter",
+mode = "lines",
+fill = "tozeroy",
+line = list(color = "red")
+) %>%
+layout(title = "Area Chart of Crop Disease Impact",
+xaxis = list(title = "Disease"),
+yaxis = list(title = "Percentage of Destruction"))
+})
+# Render Bubble Plot
+output$bubble_plot <- renderPlotly({
+plot_ly(
+data = crop_diseases_updated,
+x = ~Disease,
+y = ~Percentage_of_Destruction,
+type = "scatter",
+mode = "markers",
+marker = list(size = ~Percentage_of_Destruction, color = "yellow"),
+text = ~paste("Disease: ", Disease, "<br>Percentage: ", Percentage_of_Destruction, "%")
+) %>%
+layout(title = "Bubble Plot of Crop Disease Impact",
+xaxis = list(title = "Disease"),
+yaxis = list(title = "Percentage of Destruction"))
+})
+# Data Table
+output$data_table <- renderDT({
+datatable(crop_diseases_updated, escape = FALSE, options = list(pageLength = 5))
+})
+# Map
+output$map <- renderLeaflet({
+leaflet(data = crop_diseases_updated) %>%
+addTiles() %>%
+addMarkers(lng = ~Longitude, lat = ~Latitude, popup = ~paste( Affected_Crops, " - ", Places_Grown))
+})
+}
+# Run the application
+shinyApp(ui, server)
+vec= seq(1,5 by 1)
+vec= seq(1,5, by=1)
+vec= seq(1,5, by=1)
+print(vec)
+vec2=c(1,2,3,4)
+print(vec2)
+vec3=1:5
+vec3=1:5
+print(vec3)
+v=c(3,8,4,5,0,11,-9,304)
+print(v)
+sorted=(v,decreasing = True )
+sorted=sort(v,decreasing = True )
+sorted=sort(v,decreasing = True )
+v=c(3,8,4,5,0,11,-9,304)
+print(v)
+sorted=sort(v,decreasing = True )
+install.packages(c("ggplot2", "dplyr", "summarytools"))
+library(ggplot2)
+library(dplyr)
+library(summarytools)
+install.packages(c("ggplot2", "dplyr", "summarytools"))
+install.packages(c("ggplot2", "dplyr", "summarytools"))
+install.packages(c("ggplot2", "dplyr", "summarytools"))
